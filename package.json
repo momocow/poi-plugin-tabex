@@ -1,0 +1,50 @@
+{
+  "name": "poi-plugin-ttx",
+  "version": "0.1.0",
+  "description": "A poi plugin that helps you schedule your sortie quests to achieve the minimum sorties. 🗺️📌",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint src",
+    "commit": "gitmoji -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "poi",
+    "plugin",
+    "sortie",
+    "quest",
+    "quests",
+    "schedule",
+    "scheduler"
+  ],
+  "author": {
+    "name": "MomoCow",
+    "url": "https://github.com/momocow"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/momocow/poi-plugin-ttx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/momocow/poi-plugin-ttx/issues"
+  },
+  "homepage": "https://github.com/momocow/poi-plugin-ttx#readme",
+  "poiPlugin": {
+    "title": "Table Top Exercise",
+    "description": "Multiple quests One sortie",
+    "icon": "fa/tasks",
+    "apiVer": {
+      "10.6.0": "0.1.0"
+    }
+  },
+  "devDependencies": {
+    "eslint": "^7.7.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "gitmoji-cli": "^3.2.10"
+  }
+}
