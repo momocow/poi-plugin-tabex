@@ -1,15 +1,18 @@
 {
     "env": {
         "browser": true,
-        "commonjs": true,
-        "es2020": true
+        "es2020": true,
+        "node": true
     },
-    "extends": [
-        "standard"
-    ],
+    "extends": ["standard-with-typescript", "standard-react"],
     "parserOptions": {
+        "project": "./tsconfig.json",
+        "sourceType": "module",
+        "allowImportExportEverywhere": false,
+        "ecmaFeatures": {
+            "globalReturn": false,
+            "jsx": true
+        },
         "ecmaVersion": 12
-    },
-    "rules": {
     }
 }
