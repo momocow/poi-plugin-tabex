@@ -39,6 +39,7 @@
     }
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.1",
     "@types/lodash": "^4.14.161",
     "@types/react-redux": "^7.1.9",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
@@ -65,6 +66,7 @@
     "redux": "^4.0.5"
   },
   "dependencies": {
+    "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.0"
   }
 }
