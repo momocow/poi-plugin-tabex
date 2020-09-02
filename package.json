@@ -24,12 +24,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/momocow/poi-plugin-ttx.git"
+    "url": "git+https://github.com/momocow/poi-plugin-tabex.git"
   },
   "bugs": {
-    "url": "https://github.com/momocow/poi-plugin-ttx/issues"
+    "url": "https://github.com/momocow/poi-plugin-tabex/issues"
   },
-  "homepage": "https://github.com/momocow/poi-plugin-ttx#readme",
+  "homepage": "https://github.com/momocow/poi-plugin-tabex#readme",
   "poiPlugin": {
     "title": "Table Top Exercise",
     "description": "Multiple quests One sortie",
