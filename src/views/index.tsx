@@ -1,12 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { connect } from 'react-redux'
-import { PLUGIN_NAME } from '../constants'
-import { PoiReduxStore, TabexProps } from '../types'
+import { PLUGIN_NAME, tabexSeletor } from '../utils'
+import { PoiStore } from '../types'
 
-// const QUESTLIT_URI = '/kcsapi/api_get_member/questlist'
-
-export const Tabex = ({ poiQuests }: TabexProps) => {
+export const Tabex: React.FunctionComponent = (props) => {
   const { t } = useTranslation(PLUGIN_NAME)
   return (
     <div id={PLUGIN_NAME}>
@@ -16,7 +14,8 @@ export const Tabex = ({ poiQuests }: TabexProps) => {
 }
 
 export const PoiTabex = connect(
-  (state: PoiReduxStore) => ({
-    poiQuests: state.info.quests
+  (state: PoiStore) => ({
+    ...tabexSeletor(state),
+    activeQuestMap: state.info.quests.activeQuests
   })
 )(Tabex)
