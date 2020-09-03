@@ -1,19 +1,23 @@
 import { readFromStorage } from './utils'
-import { connectWikiQuests, reducerFactory } from './views/redux'
+import { syncWikiQuestMapWithApiQuestMap$, reducerFactory } from './views/redux'
+import { Subscription } from 'rxjs'
 
 export const windowMode = false
 
 export { PoiTabex as reactClass } from './views'
 
-let disconnectWikiQuests: ReturnType<typeof connectWikiQuests> | undefined
+let syncSubscription: Subscription | undefined
 
 export function pluginDidLoad (): void {
-  disconnectWikiQuests = connectWikiQuests()
+  if (typeof syncSubscription !== 'undefined') {
+    syncSubscription.unsubscribe()
+  }
+  syncSubscription = syncWikiQuestMapWithApiQuestMap$.subscribe()
 }
 
 export function pluginWillUnload (): void {
-  if (typeof disconnectWikiQuests === 'function') {
-    disconnectWikiQuests()
+  if (typeof syncSubscription !== 'undefined') {
+    syncSubscription.unsubscribe()
   }
 }
 

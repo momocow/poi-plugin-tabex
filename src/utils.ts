@@ -38,9 +38,11 @@ export function readFromStorage<T extends keyof StorageType> (
 
 export async function readWikiQuest (
   apiNo: number
-): Promise<WikiQuest | undefined> {
+): Promise<WikiQuest | null> {
   try {
     const questJson = require.resolve(`kcwiki-quest-data/data/${apiNo}.json`)
     return await readJson(questJson) as WikiQuest
-  } catch (e) { }
+  } catch (e) {
+    return null
+  }
 }
