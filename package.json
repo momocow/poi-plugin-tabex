@@ -44,6 +44,7 @@
     "@types/fs-extra": "^9.0.1",
     "@types/lodash": "^4.14.161",
     "@types/react-redux": "^7.1.9",
+    "@types/semver": "^7.3.3",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "eslint": "^7.8.0",
     "eslint-config-standard": "^14.1.1",
@@ -62,6 +63,7 @@
     "redux": "^4.0.5",
     "redux-observers": "^2.1.1",
     "reselect": "^4.0.0",
+    "type-fest": "^0.16.0",
     "typescript": "^4.0.2"
   },
   "peerDependencies": {

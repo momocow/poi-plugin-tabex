@@ -12,6 +12,8 @@ import {
   WikiQuest,
   WikiQuestMap
 } from './types'
+import { SemVer, parse as parseVersion } from 'semver'
+import { PackageJson } from 'type-fest'
 
 export { PLUGIN_NAME, PLUGIN_VERSION }
 
@@ -39,10 +41,26 @@ export function readFromStorage<T extends keyof StorageType> (
 export async function readWikiQuest (
   apiNo: number
 ): Promise<WikiQuest | null> {
+  const targetFilename = `kcwiki-quest-data/data/${apiNo}.json`
   try {
-    const questJson = require.resolve(`kcwiki-quest-data/data/${apiNo}.json`)
-    return await readJson(questJson) as WikiQuest
+    const questJsonFile = require.resolve(targetFilename)
+    return await readJson(questJsonFile) as WikiQuest
   } catch (e) {
     return null
   }
+}
+
+export async function readPackageVersion (
+  name: string
+): Promise<SemVer | null> {
+  const targetFilename = `${name}/package.json`
+  let packageJson: PackageJson
+  try {
+    const packageJsonFile = require.resolve(targetFilename)
+    packageJson = await readJson(packageJsonFile)
+  } catch (e) {
+    return null
+  }
+  // trust all npm package versions to be valid
+  return parseVersion(packageJson.version)
 }

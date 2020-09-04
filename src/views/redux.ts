@@ -4,17 +4,25 @@ import { AnyAction, combineReducers, Dispatch, Reducer } from 'redux'
 import { observe, observer } from 'redux-observers'
 import { createSelector } from 'reselect'
 import { from, Observable, of } from 'rxjs'
-import { filter, map, mergeMap, reduce, tap } from 'rxjs/operators'
+import { filter, map, mergeMap, reduce, tap, switchMap } from 'rxjs/operators'
 import { store } from 'views/create-store'
+import { SemVer, parse as parseVersion } from 'semver'
+import {
+  PoiQuestlistResponseAction,
+  WikiQuestMapSetAction,
+  WikiVersionSetAction,
+  updateWikiQuestMap,
+  TabexActionType,
+  TabexReducerAction
+} from './actions'
 import {
   ApiQuestMap,
-  PoiQuestlistResponseAction,
   TabexStore,
   WikiQuest,
-  WikiQuestMap,
-  WikiQuestMapSyncAction
+  WikiQuestMap
 } from '../types'
-import { readWikiQuest, tabexSeletor } from '../utils'
+import { readWikiQuest, tabexSeletor, readPackageVersion } from '../utils'
+import { Tabex } from '.'
 
 const DEFAULT_ACTION = { type: undefined }
 const SORTIE_CATEGORIES: readonly number[] = [2, 8, 9] // 2=出撃, 8=出撃(2), 9=出撃(3)
@@ -23,19 +31,10 @@ const apiQuestMapSelector = createSelector(
   tabexSeletor,
   state => state.apiQuestMap
 )
-
-const SYNC_WIKI_QUEST_MAP: WikiQuestMapSyncAction['type'] =
-  '@@poi-plugin-tabex/wikiQuestMap/sync'
-export function loadWikiQuests (
-  wikiQuestMap: WikiQuestMap | WikiQuest[]
-): WikiQuestMapSyncAction {
-  return {
-    type: SYNC_WIKI_QUEST_MAP,
-    wikiQuestMap: Array.isArray(wikiQuestMap)
-      ? Object.fromEntries(wikiQuestMap.map(q => [q.game_id, q]))
-      : wikiQuestMap
-  }
-}
+const wikiQuestMapSelector = createSelector(
+  tabexSeletor,
+  state => state.wikiQuestMap
+)
 
 interface ChangeHandle {
   dispatch: Dispatch<AnyAction>
@@ -55,27 +54,36 @@ export const syncWikiQuestMapWithApiQuestMap$ =
     ])
   )
     .pipe(
-      mergeMap(({ dispatch, current }) => of(current).pipe(
-        mergeMap(apiQuestMap => from(Object.entries(apiQuestMap)).pipe(
-          filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
-          filter(([_, q]) => q.api_state < 3), // 3=達成
-          map(([n]) => Number(n)),
-          mergeMap(n => from(readWikiQuest(n))),
-          filter((q): q is WikiQuest => q !== null),
-          reduce<WikiQuest, WikiQuestMap>(
-            (acc, q) => Object.assign(acc, { [q.game_id]: q }), {}
-          ),
-          map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap }))
+      switchMap(handle => of(handle).pipe(
+        // make closure { dispatch, current }
+        mergeMap(({ dispatch, current }) => of(current).pipe(
+          // make closure { apiQuestMap }
+          mergeMap(apiQuestMap => from(Object.entries(apiQuestMap)).pipe(
+            filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
+            filter(([_, q]) => q.api_state < 3), // 3=達成
+            map(([n]) => n),
+            filter(n => !(n in wikiQuestMapSelector(store.getState()))),
+            map(n => Number(n)),
+            mergeMap(n => from(readWikiQuest(n))),
+            filter((q): q is WikiQuest => q !== null),
+            reduce<WikiQuest, WikiQuestMap>(
+              (acc, q) => Object.assign(acc, { [q.game_id]: q }), {}
+            ),
+            // combine closure { apiQuestMap }
+            map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap }))
+          )),
+          // combine closure { dispatch }
+          map(syncHandle => ({ ...syncHandle, dispatch }))
         )),
-        map(syncHandle => ({ ...syncHandle, dispatch }))
-      )),
-      tap(
-        ({ dispatch, wikiQuestMap }) => dispatch(loadWikiQuests(wikiQuestMap))
-      )
+        tap(({ dispatch, wikiQuestMap }) => {
+          dispatch(updateWikiQuestMap(wikiQuestMap))
+        })
+      ))
     )
 
 export function reducerFactory (
-  initApiQuestMap: ApiQuestMap, initWikiQuestMap: WikiQuestMap
+  initApiQuestMap: ApiQuestMap,
+  initWikiQuestMap: WikiQuestMap
 ): Reducer<TabexStore, AnyAction> {
   const apiQuestStoreReducer: Reducer<ApiQuestMap, AnyAction> =
     (state = initApiQuestMap, action = DEFAULT_ACTION) => {
@@ -104,11 +112,21 @@ export function reducerFactory (
       }
     }
 
-  const wikiQuestStoreReducer: Reducer<WikiQuestMap, AnyAction> =
+  const wikiQuestStoreReducer: Reducer<WikiQuestMap, TabexReducerAction> =
     (state = initWikiQuestMap, action = DEFAULT_ACTION) => {
       switch (action.type) {
-        case SYNC_WIKI_QUEST_MAP:
-          return (action as WikiQuestMapSyncAction).wikiQuestMap
+        case TabexActionType.WikiQuestMapUpdate:
+          action.type
+          return (action as WikiQuestMapSetAction).wikiQuestMap
+        default:
+          return state
+      }
+    }
+  const wikiVersionReducer: Reducer<SemVer | undefined, AnyAction> =
+    (state, action) => {
+      switch (action.type) {
+        case SET_WIKI_VERSION:
+          return (action as WikiVersionSetAction).version
         default:
           return state
       }
@@ -116,6 +134,7 @@ export function reducerFactory (
 
   return combineReducers({
     apiQuestMap: apiQuestStoreReducer,
-    wikiQuestMap: wikiQuestStoreReducer
+    wikiQuestMap: wikiQuestStoreReducer,
+    wikiVersion: wikiVersionReducer
   })
 }

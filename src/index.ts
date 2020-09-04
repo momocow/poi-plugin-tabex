@@ -1,4 +1,3 @@
-import { readFromStorage } from './utils'
 import { syncWikiQuestMapWithApiQuestMap$, reducerFactory } from './views/redux'
 import { Subscription } from 'rxjs'
 
@@ -21,7 +20,4 @@ export function pluginWillUnload (): void {
   }
 }
 
-export const reducer = reducerFactory(
-  readFromStorage('apiQuestMap') ?? {},
-  readFromStorage('wikiQuestMap') ?? {}
-)
+export const reducer = reducerFactory({}, {})
