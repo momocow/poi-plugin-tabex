@@ -1,12 +1,14 @@
+import { HTTPMethod } from 'http-method-enum'
 import {
   APIGetMemberQuestlistResponse
 } from 'kcsapi/api_get_member/questlist/response'
-import { WikiQuestMap, AnyActionIncluding } from '../types'
 import { SemVer } from 'semver'
-import { Action, AnyAction } from 'redux'
+import { WikiQuestMap } from '../types'
 
 export interface PoiQuestlistResponseAction {
   type: '@@Response/kcsapi/api_get_member/questlist'
+  method: HTTPMethod
+  path: string
   body: APIGetMemberQuestlistResponse
   postBody: { api_tab_id: number }
 }
@@ -25,11 +27,6 @@ export interface WikiVersionUpdateAction {
   type: TabexActionType.WikiVersionUpdate
   version: SemVer
 }
-
-export type TabexReducerAction = AnyActionIncluding<
-WikiQuestMapUpdateAction |
-WikiVersionUpdateAction
->
 
 export function updateWikiQuestMap (
   wikiQuestMap: WikiQuestMap

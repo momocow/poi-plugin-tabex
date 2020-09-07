@@ -40,10 +40,12 @@
   },
   "devDependencies": {
     "@blueprintjs/core": "^3.31.0",
+    "@types/async-lock": "^1.1.2",
     "@types/bluebird": "^3.5.32",
     "@types/fs-extra": "^9.0.1",
     "@types/lodash": "^4.14.161",
     "@types/react-redux": "^7.1.9",
+    "@types/semaphore": "^1.1.0",
     "@types/semver": "^7.3.3",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "eslint": "^7.8.0",
@@ -57,6 +59,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "gitmoji-cli": "^3.2.10",
     "i18next": "^19.7.0",
+    "immutable": "^4.0.0-rc.12",
     "kcsapi": "^1.191214.0",
     "react": "^16.13.1",
     "react-i18next": "^11.7.2",
@@ -74,8 +77,10 @@
   },
   "dependencies": {
     "async": "^3.2.0",
+    "async-lock": "^1.2.4",
     "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.0",
-    "rxjs": "^6.6.2"
+    "rxjs": "^6.6.2",
+    "semaphore": "^1.1.0"
   }
 }
