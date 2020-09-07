@@ -1,32 +1,47 @@
+import AsyncLock from 'async-lock'
+import Immutable, { Map } from 'immutable'
 import { APIListClass } from 'kcsapi/api_get_member/questlist/response'
+import latestVersion from 'latest-version'
 import _ from 'lodash'
-import { AnyAction, combineReducers, Dispatch } from 'redux'
-import { observe, observer } from 'redux-observers'
+import { AnyAction, combineReducers } from 'redux'
+import { ThunkAction } from 'redux-thunk'
 import { createSelector } from 'reselect'
-import { from, Observable, of } from 'rxjs'
-import { filter, map, mergeMap, reduce, tap, switchMap } from 'rxjs/operators'
-import { store } from 'views/create-store'
+import { forkJoin, from, Observable } from 'rxjs'
 import {
-  PoiQuestlistResponseAction,
-  WikiQuestMapUpdateAction,
-  WikiVersionUpdateAction,
-  updateWikiQuestMap,
-  TabexActionType,
-  updateWikiVersion
-} from './actions'
+  filter,
+  map,
+  mergeMap,
+  reduce,
+  skipWhile,
+  switchMap,
+  tap
+} from 'rxjs/operators'
+import { eq as isEqualVersion, gt as isGreaterVersion, SemVer } from 'semver'
+import { store } from 'views/create-store'
+import { getNpmConfig } from 'views/services/plugin-manager/utils'
 import {
   ApiQuestMap,
+  ReducerFactory,
   TabexStore,
   WikiQuest,
-  WikiQuestMap,
-  ReducerFactory,
-  WikiVersion
+  WikiQuestMap
 } from '../types'
-import { readWikiQuest, tabexSeletor, readPackageVersion } from '../utils'
-import Immutable, { Map } from 'immutable'
-import { eq as isEqualVersion, SemVer } from 'semver'
+import {
+  installPackage,
+  PLUGIN_ROOT,
+  readPackageVersion,
+  readWikiQuest,
+  tabexSeletor
+} from '../utils'
+import {
+  PoiQuestlistResponseAction,
+  TabexActionType,
+  updateWikiQuestMap,
+  updateWikiVersion,
+  WikiQuestMapUpdateAction,
+  WikiVersionUpdateAction
+} from './actions'
 import { observeReduxStore$ } from './utils'
-import AsyncLock from 'async-lock'
 
 const DEFAULT_ACTION = { type: undefined }
 const SORTIE_CATEGORIES: readonly number[] = [2, 8, 9] // 2=出撃, 8=出撃(2), 9=出撃(3)
@@ -85,8 +100,7 @@ ReducerFactory<WikiQuestMap, [WikiQuestMap]> =
       }
     }
 
-export const wikiVersionReducerFactory:
-ReducerFactory<WikiVersion, [WikiVersion]> =
+export const wikiVersionReducerFactory: ReducerFactory<SemVer, [SemVer]> =
   (defaultVersion) =>
     (state = defaultVersion, action = DEFAULT_ACTION) => {
       switch (action.type) {
@@ -98,7 +112,7 @@ ReducerFactory<WikiVersion, [WikiVersion]> =
     }
 
 export const reducerFactory:
-ReducerFactory<TabexStore, [ApiQuestMap, WikiQuestMap, WikiVersion]> =
+ReducerFactory<TabexStore, [ApiQuestMap, WikiQuestMap, SemVer]> =
   (defaultApiQuestMap, defaultWikiQuestMap, defaultVersion) => combineReducers({
     apiQuestMap: apiQuestMapReducerFactory(defaultApiQuestMap),
     wikiQuestMap: wikiQuestMapReducerFactory(defaultWikiQuestMap),
@@ -115,7 +129,48 @@ export async function validateCachedWikiVersion (): Promise<boolean> {
     isEqualVersion(installedVersion, cachedVersion)
 }
 
-export const wikiQuestMapLock = new AsyncLock()
+export enum WikiResource {
+  KcwikiQuestData = 'kcwiki-quest-data'
+}
+
+export const wikiResourceLock = new AsyncLock()
+
+export interface LockHandle {
+  release: () => void
+}
+
+export function acquireWikiResource$ (
+  name: WikiResource
+): Observable<LockHandle> {
+  return new Observable(observer => {
+    const lockPromise = new Promise<void>(
+      resolve => observer.next({ release: resolve })
+    )
+    wikiResourceLock.acquire(name, async () => await lockPromise)
+      .then(() => observer.complete())
+      .catch(error => observer.error(error))
+  })
+}
+
+export function updateWikiPackage ():
+ThunkAction<Promise<void>, {}, undefined, AnyAction> {
+  return async function (dispatch) {
+    const npmConfig = getNpmConfig(PLUGIN_ROOT)
+    const remoteVersion = await latestVersion('kcwiki-quest-data', {
+      // @see https://github.com/sindresorhus/latest-version/pull/14
+      registryUrl: npmConfig.registry
+    } as unknown as any)
+    const localVersion = wikiVersionSelector(store.getState())
+    if (isGreaterVersion(remoteVersion, localVersion)) { // has update
+      await installPackage('kcwiki-quest-data', remoteVersion, npmConfig)
+      const newVersion = await readPackageVersion('kcwiki-quest-data')
+      if (newVersion === null) {
+        throw new Error('invalid version of "kcwiki-quest-data"')
+      }
+      dispatch(updateWikiVersion(newVersion))
+    }
+  }
+}
 
 export const resetWikiQuestMapOnWikiVersionChange$ =
   observeReduxStore$(store, wikiVersionSelector, {
@@ -123,59 +178,38 @@ export const resetWikiQuestMapOnWikiVersionChange$ =
       ? isEqualVersion(x, y) : x === y
   })
     .pipe(
-      switchMap(handle => of(handle).pipe(
-        tap(({ dispatch }) => {
-          dispatch(updateWikiQuestMap(Map()))
-        })
-      ))
+      tap(({ dispatch }) => dispatch(updateWikiQuestMap(Map())))
     )
+
+export const processWikiQuestMap$ =
+  (apiQuestMap: ApiQuestMap): Observable<WikiQuestMap> => {
+    return forkJoin( // forkJoin will wait for completion before piping
+      acquireWikiResource$(WikiResource.KcwikiQuestData).pipe(
+        // critical section
+        mergeMap(lock => from(apiQuestMap.entries()).pipe(
+          filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
+          filter(([_, q]) => q.api_state < 3), // 3=達成
+          map(([n]) => n),
+          filter(n => !wikiQuestMapSelector(store.getState()).has(n)),
+          map(n => Number(n)),
+          mergeMap(n => from(readWikiQuest(n))),
+          filter((q): q is WikiQuest => q !== null),
+          reduce<WikiQuest, WikiQuestMap>(
+            (map, q) => map.set(q.game_id, q), Map()
+          ),
+          tap(() => lock.release())
+        ))
+      )
+    ).pipe(
+      map(([wikiQuestMap]) => wikiQuestMap)
+    )
+  }
 
 export const syncWikiQuestMapWithApiQuestMap$ =
   observeReduxStore$(store, apiQuestMapSelector, { equals: Immutable.is })
     .pipe(
-      switchMap(({ dispatch, current }) => from(current.entries()).pipe(
-        filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
-        filter(([_, q]) => q.api_state < 3), // 3=達成
-        map(([n]) => n),
-        filter(n => !wikiQuestMapSelector(store.getState()).has(n)),
-        map(n => Number(n)),
-        mergeMap(n => from(readWikiQuest(n))),
-        filter((q): q is WikiQuest => q !== null),
-        reduce<WikiQuest, WikiQuestMap>(
-          (map, q) => map.set(q.game_id, q), Map()
-        ),
-        // combine closure { apiQuestMap }
-        map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap: current }))
-      )),
-      switchMap(handle => of(handle).pipe(
-        // make closure { dispatch, current }
-        switchMap(({ dispatch, current }) => of(current).pipe(
-          // make closure { apiQuestMap }
-          switchMap(apiQuestMap => from(apiQuestMap.entries()).pipe(
-            filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
-            filter(([_, q]) => q.api_state < 3), // 3=達成
-            map(([n]) => n),
-            filter(n => !wikiQuestMapSelector(store.getState()).has(n)),
-            map(n => Number(n)),
-            mergeMap(n => from(readWikiQuest(n))),
-            filter((q): q is WikiQuest => q !== null),
-            reduce<WikiQuest, WikiQuestMap>(
-              (map, q) => map.set(q.game_id, q), Map()
-            ),
-            // combine closure { apiQuestMap }
-            map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap }))
-          )),
-          switchMap()
-
-        )),
-        // switchMap(),
-        tap(({ dispatch, wikiQuestMap }) => {
-          const wikiVersion = wikiVersionSelector(store.getState())
-          if (typeof wikiVersion === 'undefined') {
-            
-            dispatch(updateWikiVersion())
-          }
-          dispatch(updateWikiQuestMap(wikiQuestMap))
-        })
+      skipWhile(() => wikiResourceLock.isBusy()),
+      switchMap(({ dispatch, current }) => processWikiQuestMap$(current).pipe(
+        tap(wikiQuestMap => dispatch(updateWikiQuestMap(wikiQuestMap)))
       ))
     )

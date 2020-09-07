@@ -1,4 +1,4 @@
-// @see https://github.com/poooi/plugin-ship-info/blob/master/shims/poi.d.ts
+// @see https://github.com/poooi/plugin-ship-info/blob/cb251d3858ee793e39bffd2f336b94762e62b87c/shims/poi.d.ts
 // @see https://github.com/poooi/poi/issues/2219
 
 declare module 'views/components/etc/window-env' {
@@ -85,4 +85,10 @@ declare module 'views/utils/ship-img' {
 
 declare module 'views/create-store' {
   export const store: any
+}
+
+// extra
+
+declare module 'views/services/plugin-manager/utils' {
+  export function getNpmConfig (prefix: string): any
 }

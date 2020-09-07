@@ -18,13 +18,12 @@ export type ApiQuestMap = Map<ApiPartialQuest['api_no'], ApiPartialQuest>
 // Kcwiki
 export { WikiQuest }
 export type WikiQuestMap = Map<WikiQuest['game_id'], WikiQuest>
-export type WikiVersion = SemVer | undefined
 
 // Tabex
 export interface TabexStore {
   apiQuestMap: ApiQuestMap
   wikiQuestMap: WikiQuestMap
-  wikiVersion: WikiVersion
+  wikiVersion: SemVer
 }
 export type TabexOwnProps = any
 export interface TabexProps extends TabexStore {

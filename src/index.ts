@@ -1,5 +1,7 @@
 import { syncWikiQuestMapWithApiQuestMap$, reducerFactory } from './views/redux'
 import { Subscription } from 'rxjs'
+import { readPackageVersionSync } from './utils'
+import { Map } from 'immutable'
 
 export const windowMode = false
 
@@ -20,4 +22,9 @@ export function pluginWillUnload (): void {
   }
 }
 
-export const reducer = reducerFactory({}, {})
+const wikiVersion = readPackageVersionSync('kcwiki-quest-data')
+if (wikiVersion === null) {
+  throw new Error('invalid version of "kcwiki-quest-data"')
+}
+
+export const reducer = reducerFactory(Map(), Map(), wikiVersion)

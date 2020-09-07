@@ -63,8 +63,10 @@
     "kcsapi": "^1.191214.0",
     "react": "^16.13.1",
     "react-i18next": "^11.7.2",
+    "react-thunk": "^1.0.0",
     "redux": "^4.0.5",
     "redux-observers": "^2.1.1",
+    "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "type-fest": "^0.16.0",
     "typescript": "^4.0.2"
@@ -80,6 +82,7 @@
     "async-lock": "^1.2.4",
     "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.0",
+    "latest-version": "^5.1.0",
     "rxjs": "^6.6.2",
     "semaphore": "^1.1.0"
   }
