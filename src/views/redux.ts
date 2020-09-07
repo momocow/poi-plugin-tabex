@@ -11,7 +11,8 @@ import {
   WikiQuestMapUpdateAction,
   WikiVersionUpdateAction,
   updateWikiQuestMap,
-  TabexActionType
+  TabexActionType,
+  updateWikiVersion
 } from './actions'
 import {
   ApiQuestMap,
@@ -22,18 +23,25 @@ import {
   WikiVersion
 } from '../types'
 import { readWikiQuest, tabexSeletor, readPackageVersion } from '../utils'
-import { Map } from 'immutable'
+import Immutable, { Map } from 'immutable'
+import { eq as isEqualVersion, SemVer } from 'semver'
+import { observeReduxStore$ } from './utils'
+import AsyncLock from 'async-lock'
 
 const DEFAULT_ACTION = { type: undefined }
 const SORTIE_CATEGORIES: readonly number[] = [2, 8, 9] // 2=出撃, 8=出撃(2), 9=出撃(3)
 
-const apiQuestMapSelector = createSelector(
+export const apiQuestMapSelector = createSelector(
   tabexSeletor,
   state => state.apiQuestMap
 )
-const wikiQuestMapSelector = createSelector(
+export const wikiQuestMapSelector = createSelector(
   tabexSeletor,
   state => state.wikiQuestMap
+)
+export const wikiVersionSelector = createSelector(
+  tabexSeletor,
+  state => state.wikiVersion
 )
 
 export const apiQuestMapReducerFactory:
@@ -97,29 +105,53 @@ ReducerFactory<TabexStore, [ApiQuestMap, WikiQuestMap, WikiVersion]> =
     wikiVersion: wikiVersionReducerFactory(defaultVersion)
   })
 
-interface ChangeHandle {
-  dispatch: Dispatch<AnyAction>
-  current: ApiQuestMap
-  previous?: ApiQuestMap
+export async function validateCachedWikiVersion (): Promise<boolean> {
+  const installedVersion = await readPackageVersion('kcwiki-quest-data')
+  if (installedVersion === null) {
+    throw new Error('the version of "kcwiki-quest-data" is indeterminate')
+  }
+  const cachedVersion = wikiVersionSelector(store.getState())
+  return typeof cachedVersion === 'undefined' || // no cache
+    isEqualVersion(installedVersion, cachedVersion)
 }
 
-export const syncWikiQuestMapWithApiQuestMap$ =
-  new Observable<ChangeHandle>(
-    (subscriber) => observe(store, [
-      observer(
-        state => apiQuestMapSelector(state),
-        (dispatch, current, previous) => {
-          subscriber.next({ dispatch, current, previous })
-        }
-      )
-    ])
-  )
+export const wikiQuestMapLock = new AsyncLock()
+
+export const resetWikiQuestMapOnWikiVersionChange$ =
+  observeReduxStore$(store, wikiVersionSelector, {
+    equals: (x, y) => x instanceof SemVer && y instanceof SemVer
+      ? isEqualVersion(x, y) : x === y
+  })
     .pipe(
       switchMap(handle => of(handle).pipe(
+        tap(({ dispatch }) => {
+          dispatch(updateWikiQuestMap(Map()))
+        })
+      ))
+    )
+
+export const syncWikiQuestMapWithApiQuestMap$ =
+  observeReduxStore$(store, apiQuestMapSelector, { equals: Immutable.is })
+    .pipe(
+      switchMap(({ dispatch, current }) => from(current.entries()).pipe(
+        filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
+        filter(([_, q]) => q.api_state < 3), // 3=達成
+        map(([n]) => n),
+        filter(n => !wikiQuestMapSelector(store.getState()).has(n)),
+        map(n => Number(n)),
+        mergeMap(n => from(readWikiQuest(n))),
+        filter((q): q is WikiQuest => q !== null),
+        reduce<WikiQuest, WikiQuestMap>(
+          (map, q) => map.set(q.game_id, q), Map()
+        ),
+        // combine closure { apiQuestMap }
+        map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap: current }))
+      )),
+      switchMap(handle => of(handle).pipe(
         // make closure { dispatch, current }
-        mergeMap(({ dispatch, current }) => of(current).pipe(
+        switchMap(({ dispatch, current }) => of(current).pipe(
           // make closure { apiQuestMap }
-          mergeMap(apiQuestMap => from(apiQuestMap.entries()).pipe(
+          switchMap(apiQuestMap => from(apiQuestMap.entries()).pipe(
             filter(([_, q]) => SORTIE_CATEGORIES.includes(q.api_category)),
             filter(([_, q]) => q.api_state < 3), // 3=達成
             map(([n]) => n),
@@ -133,10 +165,16 @@ export const syncWikiQuestMapWithApiQuestMap$ =
             // combine closure { apiQuestMap }
             map(wikiQuestMap => ({ wikiQuestMap, apiQuestMap }))
           )),
-          // combine closure { dispatch }
-          map(syncHandle => ({ ...syncHandle, dispatch }))
+          switchMap()
+
         )),
+        // switchMap(),
         tap(({ dispatch, wikiQuestMap }) => {
+          const wikiVersion = wikiVersionSelector(store.getState())
+          if (typeof wikiVersion === 'undefined') {
+            
+            dispatch(updateWikiVersion())
+          }
           dispatch(updateWikiQuestMap(wikiQuestMap))
         })
       ))
