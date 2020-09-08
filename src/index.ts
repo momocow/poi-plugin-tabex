@@ -1,7 +1,12 @@
-import { syncWikiQuestMapWithApiQuestMap$, reducerFactory } from './views/redux'
+import {
+  syncWikiQuestMapWithApiQuestMap$,
+  reducerFactory,
+  updateWikiPackage,
+  store
+} from './views/redux'
 import { Subscription } from 'rxjs'
-import { readPackageVersionSync } from './utils'
 import { Map } from 'immutable'
+import { SemVer } from 'semver'
 
 export const windowMode = false
 
@@ -14,6 +19,7 @@ export function pluginDidLoad (): void {
     syncSubscription.unsubscribe()
   }
   syncSubscription = syncWikiQuestMapWithApiQuestMap$.subscribe()
+  store.dispatch(updateWikiPackage())
 }
 
 export function pluginWillUnload (): void {
@@ -22,9 +28,4 @@ export function pluginWillUnload (): void {
   }
 }
 
-const wikiVersion = readPackageVersionSync('kcwiki-quest-data')
-if (wikiVersion === null) {
-  throw new Error('invalid version of "kcwiki-quest-data"')
-}
-
-export const reducer = reducerFactory(Map(), Map(), wikiVersion)
+export const reducer = reducerFactory(Map(), Map(), new SemVer('0.0.0'))

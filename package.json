@@ -82,7 +82,7 @@
     "async-lock": "^1.2.4",
     "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.0",
-    "latest-version": "^5.1.0",
+    "package-json": "^6.5.0",
     "rxjs": "^6.6.2",
     "semaphore": "^1.1.0"
   }

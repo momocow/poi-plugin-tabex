@@ -1,29 +1,24 @@
 import { fork as procFork } from 'child_process'
-import { readJson, readJsonSync } from 'fs-extra'
+import { readJson } from 'fs-extra'
 import path from 'path'
-import { Selector } from 'reselect'
 import { parse as parseVersion, SemVer } from 'semver'
 import { PackageJson } from 'type-fest'
 import { getNpmConfig } from 'views/services/plugin-manager/utils'
-import { extensionSelectorFactory } from 'views/utils/selectors'
 import {
   name as PLUGIN_NAME,
   version as PLUGIN_VERSION
 } from '../package.json'
 import {
   ApiQuestMap,
-  PoiStore,
-  TabexStore,
   WikiQuest,
   WikiQuestMap
 } from './types'
+import { KcwikiError } from './errors'
 
 const { PLUGIN_PATH, ROOT } = window
+const { config } = global
 
 export { PLUGIN_NAME, PLUGIN_VERSION }
-
-export const tabexSeletor: Selector<PoiStore, TabexStore> =
-  extensionSelectorFactory(PLUGIN_NAME)
 
 interface StorageType {
   apiQuestMap: ApiQuestMap
@@ -43,18 +38,6 @@ export function readFromStorage<T extends keyof StorageType> (
   return cache === null ? null : JSON.parse(cache)
 }
 
-export async function readWikiQuest (
-  apiNo: number
-): Promise<WikiQuest | null> {
-  const targetFilename = `kcwiki-quest-data/data/${apiNo}.json`
-  try {
-    const questJsonFile = require.resolve(targetFilename)
-    return await readJson(questJsonFile) as WikiQuest
-  } catch (e) {
-    return null
-  }
-}
-
 export async function readPackageVersion (
   name: string
 ): Promise<SemVer | null> {
@@ -63,21 +46,6 @@ export async function readPackageVersion (
   try {
     const packageJsonFile = require.resolve(targetFilename)
     packageJson = await readJson(packageJsonFile)
-  } catch (e) {
-    return null
-  }
-  // trust all npm package versions to be valid
-  return parseVersion(packageJson.version)
-}
-
-export function readPackageVersionSync (
-  name: string
-): SemVer | null {
-  const targetFilename = `${name}/package.json`
-  let packageJson: PackageJson
-  try {
-    const packageJsonFile = require.resolve(targetFilename)
-    packageJson = readJsonSync(packageJsonFile)
   } catch (e) {
     return null
   }
@@ -126,4 +94,18 @@ export async function installPackage (
   await runScriptAsync(NPM_EXEC_PATH, args, {
     cwd: npmConfig.prefix
   })
+}
+
+export const CONFIG_PREFIX = 'plugin.Tabex'
+
+export function getConfigName (key: string): string {
+  return `${CONFIG_PREFIX}.${key}`
+}
+
+export function getConfig<T = any> (key: string, defaultValue: T): T {
+  return config.get<T>(getConfigName(key), defaultValue)
+}
+
+export function setConfig (key: string, value: any): void {
+  config.set(getConfigName(key), value)
 }

@@ -22,12 +22,13 @@ export type WikiQuestMap = Map<WikiQuest['game_id'], WikiQuest>
 // Tabex
 export interface TabexStore {
   apiQuestMap: ApiQuestMap
-  wikiQuestMap: WikiQuestMap
-  wikiVersion: SemVer
 }
 export type TabexOwnProps = any
 export interface TabexProps extends TabexStore {
   activeQuestMap: any
+}
+export interface TabexConfig {
+  kcwikiVersionRange: string
 }
 
 export type ReducerFactory<
