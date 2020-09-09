@@ -1,19 +1,11 @@
-import { fork as procFork } from 'child_process'
+import { fork } from 'child-process-promise'
 import { readJson } from 'fs-extra'
 import path from 'path'
 import { parse as parseVersion, SemVer } from 'semver'
 import { PackageJson } from 'type-fest'
 import { getNpmConfig } from 'views/services/plugin-manager/utils'
-import {
-  name as PLUGIN_NAME,
-  version as PLUGIN_VERSION
-} from '../package.json'
-import {
-  ApiQuestMap,
-  WikiQuest,
-  WikiQuestMap
-} from './types'
-import { KcwikiError } from './errors'
+import { name as PLUGIN_NAME, version as PLUGIN_VERSION } from '../package.json'
+import { ApiQuestMap, WikiQuestMap } from './types'
 
 const { PLUGIN_PATH, ROOT } = window
 const { config } = global
@@ -53,15 +45,6 @@ export async function readPackageVersion (
   return parseVersion(packageJson.version)
 }
 
-export async function runScriptAsync (
-  ...args: Parameters<typeof procFork>
-): Promise<void> {
-  return await new Promise((resolve) => {
-    const proc = procFork(...args)
-    proc.on('exit', () => resolve())
-  })
-}
-
 export const NPM_EXEC_PATH = path.join(
   ROOT, 'node_modules', 'npm', 'bin', 'npm-cli.js'
 )
@@ -91,7 +74,7 @@ export async function installPackage (
     '--no-package-lock',
     packageName
   ]
-  await runScriptAsync(NPM_EXEC_PATH, args, {
+  await fork(NPM_EXEC_PATH, args, {
     cwd: npmConfig.prefix
   })
 }

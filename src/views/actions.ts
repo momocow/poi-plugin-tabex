@@ -3,7 +3,10 @@ import {
   APIGetMemberQuestlistResponse
 } from 'kcsapi/api_get_member/questlist/response'
 import { SemVer } from 'semver'
-import { WikiQuestMap } from '../types'
+import { WikiQuestMap, PoiStore } from '../types'
+import { ThunkAction } from 'redux-thunk'
+import { upgrade as upgradeLocalWiki } from '../kcwiki'
+import { wikiVersionSelector } from '../selectors'
 
 export interface PoiQuestlistResponseAction {
   type: '@@Response/kcsapi/api_get_member/questlist'
@@ -14,26 +17,45 @@ export interface PoiQuestlistResponseAction {
 }
 
 export enum TabexActionType {
-  WikiQuestMapUpdate = '@@poi-plugin-tabex/WikiQuestMap/update',
-  WikiVersionUpdate = '@@poi-plugin-tabex/WikiVersion/update'
+  WikiQuestJoin = '@@poi-plugin-tabex/WikiQuest/join',
+  KcwikiPreUpgrade = '@@poi-plugin-tabex/Kcwiki/upgrade/pre',
+  KcwikiPostUpgrade = '@@poi-plugin-tabex/Kcwiki/upgrade/post'
 }
 
-export interface WikiQuestMapUpdateAction {
-  type: TabexActionType.WikiQuestMapUpdate
-  wikiQuestMap: WikiQuestMap
+export interface WikiQuestJoinAction {
+  type: TabexActionType.WikiQuestJoin
+  map: WikiQuestMap
 }
 
-export interface WikiVersionUpdateAction {
-  type: TabexActionType.WikiVersionUpdate
-  version: SemVer
+export interface KcwikiPreUpgradeAction {
+  type: TabexActionType.KcwikiPreUpgrade
+  range: string
 }
 
-export function updateWikiQuestMap (
-  wikiQuestMap: WikiQuestMap
-): WikiQuestMapUpdateAction {
-  return { type: TabexActionType.WikiQuestMapUpdate, wikiQuestMap }
+export interface KcwikiPostUpgradeAction {
+  type: TabexActionType.KcwikiPostUpgrade
+  currentVersion: SemVer
+  previousVersion: SemVer
 }
 
-export function updateWikiVersion (version: SemVer): WikiVersionUpdateAction {
-  return { type: TabexActionType.WikiVersionUpdate, version }
+export function wikiQuestJoin (map: WikiQuestMap): WikiQuestJoinAction {
+  return { type: TabexActionType.WikiQuestJoin, map }
+}
+
+export function kcwikiPreUpgrade (range: string):
+ThunkAction<Promise<void>, PoiStore, {}, KcwikiPostUpgradeAction> {
+  return async (dispatch, getState) => {
+    const previous = wikiVersionSelector(getState())
+    const current = await upgradeLocalWiki(range)
+    dispatch(kcwikiPostUpgrade(previous, current))
+  }
+}
+
+export function kcwikiPostUpgrade (
+  previousVersion: SemVer,
+  currentVersion: SemVer
+): KcwikiPostUpgradeAction {
+  return {
+    type: TabexActionType.KcwikiPostUpgrade, currentVersion, previousVersion
+  }
 }

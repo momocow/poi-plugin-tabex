@@ -42,6 +42,7 @@
     "@blueprintjs/core": "^3.31.0",
     "@types/async-lock": "^1.1.2",
     "@types/bluebird": "^3.5.32",
+    "@types/child-process-promise": "^2.2.1",
     "@types/fs-extra": "^9.0.1",
     "@types/lodash": "^4.14.161",
     "@types/react-redux": "^7.1.9",
@@ -80,6 +81,7 @@
   "dependencies": {
     "async": "^3.2.0",
     "async-lock": "^1.2.4",
+    "child-process-promise": "^2.2.1",
     "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.0",
     "package-json": "^6.5.0",
