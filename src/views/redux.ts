@@ -8,7 +8,8 @@ import {
   ApiQuestMap,
   ReducerFactory,
   TabexStore,
-  WikiQuestMap
+  WikiQuestMap,
+  ApiPartialQuest
 } from '../types'
 import {
   PoiQuestlistResponseAction,
@@ -32,17 +33,14 @@ ReducerFactory<ApiQuestMap, [ApiQuestMap]> =
             body: { api_list: apiList }
           } = action as PoiQuestlistResponseAction
           // overwrite if tab id is 0, 0=全て
-          return (apiTabId === 0 ? state.clear() : state)
-            .merge(
-              apiList
-                // exclude number-only quests (who are them???)
-                .filter((q): q is APIListClass => typeof q !== 'number')
-                // make entries with api_no as keys
-                .map(q => [
-                  q.api_no,
-                  // pick only keys that matter the wiki quest lookup
-                  _.pick(q, 'api_no', 'api_state', 'api_category')
-                ])
+          return apiList
+            .filter((q): q is APIListClass => typeof q !== 'number')
+            .map(q => [
+              q.api_no, _.pick(q, 'api_no', 'api_state', 'api_category')
+            ] as [number, ApiPartialQuest])
+            .reduce(
+              (apiQuestMap, [apiNo, quest]) => apiQuestMap.set(apiNo, quest),
+              (apiTabId === 0 ? state.clear() : state)
             )
         }
         default:

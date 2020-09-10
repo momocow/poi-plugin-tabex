@@ -1,7 +1,10 @@
 import { Map } from 'immutable'
 import { AnyAction, Dispatch } from 'redux'
-import { Options as ReduxObserversOptions } from 'redux-observers'
-import { observe, observer } from 'redux-observers/types'
+import {
+  observe,
+  observer,
+  Options as ReduxObserversOptions
+} from 'redux-observers'
 import { Selector } from 'reselect'
 import { forkJoin, from, Observable } from 'rxjs'
 import { filter, map, mergeMap, reduce, tap } from 'rxjs/operators'
@@ -57,7 +60,7 @@ export function acquireWikiResource$ (
 
 export const processWikiQuestMap$ =
   (state: any, apiQuestMap: ApiQuestMap): Observable<WikiQuestMap> => {
-    return forkJoin( // forkJoin will wait for completion before piping
+    return forkJoin([ // forkJoin will wait for completion before piping
       acquireWikiResource$(WikiResource.KcwikiQuestDataRead).pipe(
         // critical section
         mergeMap(lock => from(apiQuestMap.entries()).pipe(
@@ -71,10 +74,10 @@ export const processWikiQuestMap$ =
           reduce<WikiQuest, WikiQuestMap>(
             (map, q) => map.set(q.game_id, q), Map()
           ),
-          tap(() => lock.release())
+          tap(() => { lock.release() })
         ))
       )
-    ).pipe(
-      map(([wikiQuestMap]) => wikiQuestMap)
+    ]).pipe(
+      map(([WikiQuestMap]) => WikiQuestMap)
     )
   }

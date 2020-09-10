@@ -4,8 +4,11 @@ import path from 'path'
 import { parse as parseVersion, SemVer } from 'semver'
 import { PackageJson } from 'type-fest'
 import { getNpmConfig } from 'views/services/plugin-manager/utils'
-import { name as PLUGIN_NAME, version as PLUGIN_VERSION } from '../package.json'
-import { ApiQuestMap, WikiQuestMap } from './types'
+import {
+  name as PLUGIN_NAME,
+  version as PLUGIN_VERSION
+} from '../../package.json'
+import { ApiQuestMap, WikiQuestMap } from '../types'
 
 const { PLUGIN_PATH, ROOT } = window
 const { config } = global
