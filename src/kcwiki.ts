@@ -1,23 +1,23 @@
+import { readJson } from 'fs-extra'
+import fetchRemotePackageJson, { AbbreviatedMetadata } from 'package-json'
 import {
-  SemVer,
   eq as vEq,
   maxSatisfying as vMaxSatisfying,
+  SemVer,
   valid as vValid
 } from 'semver'
-import { readPackageVersion, PLUGIN_ROOT, installPackage } from './utils'
-import { KcwikiError } from './errors'
-import AsyncLock from 'async-lock'
-import { getNpmConfig } from 'views/services/plugin-manager/utils'
 import { PackageJson } from 'type-fest'
-import fetchRemotePackageJson, { AbbreviatedMetadata } from 'package-json'
+import { getNpmConfig } from 'views/services/plugin-manager/utils'
+import { KcwikiError } from './errors'
 import { WikiQuest } from './types'
-import { readJson } from 'fs-extra'
+import { installPackage, PLUGIN_ROOT, readPackageVersion } from './utils'
+import { RLock } from './utils/lock'
 
-// export const 
-export const resourceLock = new AsyncLock()
+export const resourceLock = new RLock()
 
 export enum WikiResource {
-  KcwikiQuestData = 'kcwiki-quest-data'
+  KcwikiQuestDataWrite = 'kcwiki-quest-data:write',
+  KcwikiQuestDataRead = 'kcwiki-quest-data:read'
 }
 
 export async function getLocalVersion (): Promise<SemVer> {
@@ -32,38 +32,39 @@ function isValidVersion<T extends string> (v?: T): v is T {
   return vValid(v) !== null
 }
 
-export async function upgrade (versionOrRange: string): Promise<SemVer> {
-  return await resourceLock.acquire(WikiResource.KcwikiQuestData, async () => {
-    const localVersion: SemVer = await getLocalVersion()
-    let targetVersion: string
+export async function upgrade (versionOrRange: string): Promise<void> {
+  return await resourceLock.acquire(
+    WikiResource.KcwikiQuestDataWrite,
+    async () => {
+      const localVersion: SemVer = await getLocalVersion()
+      let targetVersion: string
 
-    const npmConfig = getNpmConfig(PLUGIN_ROOT)
-    const remotePackage: PackageJson & AbbreviatedMetadata =
-      await fetchRemotePackageJson('kcwiki-quest-data', {
-        registryUrl: npmConfig.registry
-      })
-    const remoteVersions = Object.keys(remotePackage.versions)
+      const npmConfig = getNpmConfig(PLUGIN_ROOT)
+      const remotePackage: PackageJson & AbbreviatedMetadata =
+        await fetchRemotePackageJson('kcwiki-quest-data', {
+          registryUrl: npmConfig.registry
+        })
+      const remoteVersions = Object.keys(remotePackage.versions)
 
-    if (!isValidVersion(versionOrRange)) { // range
-      const satisfiedVersion = vMaxSatisfying(remoteVersions, versionOrRange)
-      if (satisfiedVersion === null) { // no update avaiable
-        return localVersion
+      if (!isValidVersion(versionOrRange)) { // range
+        const satisfiedVersion = vMaxSatisfying(remoteVersions, versionOrRange)
+        if (satisfiedVersion === null) { // no update avaiable
+          return
+        }
+        targetVersion = satisfiedVersion
+      } else {
+        const validVersion = vValid(versionOrRange) as string
+        const matchedVersion = remoteVersions.find(v => vEq(v, validVersion))
+        if (typeof matchedVersion === 'undefined') { // no update avaiable
+          return
+        }
+        targetVersion = matchedVersion
       }
-      targetVersion = satisfiedVersion
-    } else {
-      const validVersion = vValid(versionOrRange) as string
-      const matchedVersion = remoteVersions.find(v => vEq(v, validVersion))
-      if (typeof matchedVersion === 'undefined') { // no update avaiable
-        return localVersion
+      if (!vEq(targetVersion, localVersion)) {
+        await installPackage('kcwiki-quest-data', targetVersion, npmConfig)
       }
-      targetVersion = matchedVersion
     }
-    if (!vEq(targetVersion, localVersion)) {
-      await installPackage('kcwiki-quest-data', targetVersion, npmConfig)
-      return await getLocalVersion()
-    }
-    return localVersion
-  })
+  )
 }
 
 export async function loadQuest (gameId: number): Promise<WikiQuest | null> {

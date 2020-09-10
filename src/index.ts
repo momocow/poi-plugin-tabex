@@ -1,30 +1,24 @@
-import {
-  syncWikiQuestMapWithApiQuestMap$,
-  reducerFactory,
-  updateWikiPackage,
-  store
-} from './views/redux'
-import { Subscription } from 'rxjs'
+import { reducerFactory, store } from './views/redux'
 import { Map } from 'immutable'
 import { SemVer } from 'semver'
+import { wikiQuestConnect } from './views/actions'
+import { Subscription } from 'rxjs'
 
 export const windowMode = false
 
 export { PoiTabex as reactClass } from './views'
 
-let syncSubscription: Subscription | undefined
+let subsc: Subscription
 
-export function pluginDidLoad (): void {
-  if (typeof syncSubscription !== 'undefined') {
-    syncSubscription.unsubscribe()
+export async function pluginDidLoad (): Promise<void> {
+  if (typeof subsc === 'undefined') {
+    subsc = await store.dispatch(wikiQuestConnect(store))
   }
-  syncSubscription = syncWikiQuestMapWithApiQuestMap$.subscribe()
-  store.dispatch(updateWikiPackage())
 }
 
 export function pluginWillUnload (): void {
-  if (typeof syncSubscription !== 'undefined') {
-    syncSubscription.unsubscribe()
+  if (typeof subsc !== 'undefined') {
+    subsc.unsubscribe()
   }
 }
 

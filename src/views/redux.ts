@@ -1,12 +1,9 @@
-import Immutable, { Map } from 'immutable'
+import { Map } from 'immutable'
 import { APIListClass } from 'kcsapi/api_get_member/questlist/response'
 import _ from 'lodash'
 import { combineReducers } from 'redux'
-import { skipWhile, switchMap, tap } from 'rxjs/operators'
-import { eq as vEq, SemVer } from 'semver'
+import { SemVer } from 'semver'
 import { store } from 'views/create-store'
-import { getLocalVersion, resourceLock, WikiResource } from '../kcwiki'
-import { apiQuestMapSelector, wikiVersionSelector } from '../selectors'
 import {
   ApiQuestMap,
   ReducerFactory,
@@ -14,13 +11,12 @@ import {
   WikiQuestMap
 } from '../types'
 import {
-  KcwikiPostUpgradeAction,
   PoiQuestlistResponseAction,
   TabexActionType,
 
-  wikiQuestJoin, WikiQuestJoinAction
+  WikiQuestJoinAction,
+  WikiVersionSetAction
 } from './actions'
-import { observeReduxStore$, processWikiQuestMap$ } from './utils'
 
 export { store }
 const DEFAULT_ACTION = { type: undefined }
@@ -61,12 +57,8 @@ ReducerFactory<WikiQuestMap, [WikiQuestMap]> =
       switch (action.type) {
         case TabexActionType.WikiQuestJoin:
           return state.merge((action as WikiQuestJoinAction).map)
-        case TabexActionType.KcwikiPostUpgrade: {
-          const {
-            currentVersion, previousVersion
-          } = action as KcwikiPostUpgradeAction
-          return vEq(currentVersion, previousVersion) ? state : Map()
-        }
+        case TabexActionType.WikiQuestReset:
+          return Map()
         default:
           return state
       }
@@ -76,8 +68,8 @@ export const wikiVersionReducerFactory: ReducerFactory<SemVer, [SemVer]> =
   (defaultVersion) =>
     (state = defaultVersion, action = DEFAULT_ACTION) => {
       switch (action.type) {
-        case TabexActionType.KcwikiPostUpgrade:
-          return (action as KcwikiPostUpgradeAction).currentVersion
+        case TabexActionType.WikiVersionSet:
+          return (action as WikiVersionSetAction).version
         default:
           return state
       }
@@ -91,21 +83,3 @@ TabexStore, [ApiQuestMap, WikiQuestMap, SemVer]> =
       wikiQuestMap: wikiQuestMapReducerFactory(defaultWikiQuestMap),
       wikiVersion: wikiVersionReducerFactory(defaultWikiVersion)
     })
-
-export async function validateCachedWikiVersion (): Promise<boolean> {
-  const installedVersion = await getLocalVersion()
-  const cachedVersion = wikiVersionSelector(store.getState())
-  return typeof cachedVersion === 'undefined' || // no cache
-    vEq(installedVersion, cachedVersion)
-}
-
-export const syncWikiQuestMapWithApiQuestMap$ =
-  observeReduxStore$(store, apiQuestMapSelector, { equals: Immutable.is })
-    .pipe(
-      skipWhile(() => resourceLock.isBusy(WikiResource.KcwikiQuestData)),
-      switchMap(({ dispatch, current }) =>
-        processWikiQuestMap$(current).pipe(
-          tap(wikiQuestMap => dispatch(wikiQuestJoin(wikiQuestMap)))
-        )
-      )
-    )
