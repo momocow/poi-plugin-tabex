@@ -4,8 +4,16 @@
     "jsx": "react",
     "strict": true,
     "moduleResolution": "node",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "esModuleInterop": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": [ "src/*" ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "shims/**/*",
+    ".storybook/stories/**/*", ".storybook/utils.js"
+  ]
 }
