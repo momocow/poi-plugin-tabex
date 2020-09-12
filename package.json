@@ -6,7 +6,9 @@
   "scripts": {
     "lint": "eslint --fix --ext .ts,.tsx src",
     "commit": "gitmoji -c",
-    "test": "jest"
+    "test": "jest",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "keywords": [
     "poi",
@@ -39,7 +41,12 @@
     }
   },
   "devDependencies": {
+    "@babel/core": "^7.11.6",
     "@blueprintjs/core": "^3.31.0",
+    "@storybook/addon-actions": "^6.0.21",
+    "@storybook/addon-essentials": "^6.0.21",
+    "@storybook/addon-links": "^6.0.21",
+    "@storybook/react": "^6.0.21",
     "@types/async-lock": "^1.1.2",
     "@types/bluebird": "^3.5.32",
     "@types/child-process-promise": "^2.2.1",
@@ -50,6 +57,7 @@
     "@types/semaphore": "^1.1.0",
     "@types/semver": "^7.3.3",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "babel-loader": "^8.1.0",
     "delay": "^4.4.0",
     "eslint": "^7.8.0",
     "eslint-config-standard": "^14.1.1",
@@ -67,6 +75,7 @@
     "kcsapi": "^1.191214.0",
     "react": "^16.13.1",
     "react-i18next": "^11.7.2",
+    "react-is": "^16.13.1",
     "react-thunk": "^1.0.0",
     "redux": "^4.0.5",
     "redux-observers": "^2.1.1",
