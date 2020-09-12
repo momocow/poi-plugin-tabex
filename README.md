@@ -1,5 +1,8 @@
 [![poooi/poi](https://img.shields.io/badge/poooi-poi-ff69b4)](https://poi.moe/)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Storybook](https://raw.githubusercontent.com/storybooks/brand/master/badge/badge-storybook.svg)](https://cow.moe/poi-plugin-tabex/)
+
+> This plugin is currently under development.
 
 # poi-plugin-tabex
 
