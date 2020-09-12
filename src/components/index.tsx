@@ -1,27 +1,16 @@
-import React from 'react'
-import { useTranslation } from 'react-i18next'
 import { connect } from 'react-redux'
-import { PoiStore, TabexProps } from '../types'
-import { PLUGIN_NAME } from '../utils'
 import {
   activeQuestsSelector,
   mapInfoSelector,
   tabexSeletor
 } from '../selectors'
-
-export const Tabex: React.FunctionComponent<TabexProps> = (props) => {
-  const { t } = useTranslation(PLUGIN_NAME)
-  return (
-    <div id={PLUGIN_NAME}>
-      {t('Table Top Exercise')}
-    </div>
-  )
-}
+import { PoiStore } from '../types'
+import { Tabex } from './tabex'
 
 export const PoiTabex = connect(
   (state: PoiStore) => ({
     ...tabexSeletor(state),
     mapInfo: mapInfoSelector(state),
-    activeQuestMap: activeQuestsSelector(state)
+    activeQuests: activeQuestsSelector(state)
   })
 )(Tabex)

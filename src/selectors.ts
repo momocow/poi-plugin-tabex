@@ -1,14 +1,15 @@
 import _get from 'lodash/get'
 import { createSelector, Selector } from 'reselect'
-import { constSelector } from 'views/utils/selectors'
-
 import {
   configSelector,
+  constSelector,
   extensionSelectorFactory,
   stateSelector
 } from 'views/utils/selectors'
-import { PoiStore, TabexStore, TabexConfig } from './types'
-import { PLUGIN_NAME, getConfigName as cfg } from './utils'
+import { PoiStore, TabexConfig, TabexStore } from './types'
+import { getConfigName as cfg } from './utils'
+
+import { name as PLUGIN_NAME } from '../package.json'
 
 export const tabexSeletor: Selector<PoiStore, TabexStore> =
   extensionSelectorFactory(PLUGIN_NAME)

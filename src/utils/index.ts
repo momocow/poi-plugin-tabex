@@ -13,16 +13,11 @@ import { Observable } from 'rxjs'
 import { parse as parseVersion, SemVer } from 'semver'
 import { PackageJson } from 'type-fest'
 import { getNpmConfig } from 'views/services/plugin-manager/utils'
-import {
-  name as PLUGIN_NAME,
-  version as PLUGIN_VERSION
-} from '../../package.json'
+import { name as PLUGIN_NAME } from '../../package.json'
 import { ApiQuestMap, WikiQuestMap } from '../types'
 
 const { PLUGIN_PATH, ROOT } = window
 const { config } = global
-
-export { PLUGIN_NAME, PLUGIN_VERSION }
 
 interface StorageType {
   apiQuestMap: ApiQuestMap

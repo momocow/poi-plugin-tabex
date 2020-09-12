@@ -14,7 +14,6 @@ import {
 import {
   PoiQuestlistResponseAction,
   TabexActionType,
-
   WikiQuestJoinAction,
   WikiVersionSetAction
 } from './actions'

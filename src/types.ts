@@ -1,8 +1,10 @@
+import { Map } from 'immutable'
 import { APIListClass } from 'kcsapi/api_get_member/questlist/response'
 import { Quest as WikiQuest } from 'kcwiki-quest-data'
+import { WithTranslation } from 'react-i18next'
 import { AnyAction, Reducer } from 'redux'
-import { Map } from 'immutable'
 import { SemVer } from 'semver'
+import { IConstState } from 'views/utils/selectors'
 
 // Poi
 export type PoiStore = any
@@ -26,9 +28,9 @@ export interface TabexStore {
   wikiVersion: SemVer
 }
 
-export type TabexOwnProps = any
-export interface TabexProps extends TabexStore {
-  activeQuestMap: any
+export interface TabexProps extends TabexStore, WithTranslation {
+  mapInfo: IConstState['$maps']
+  activeQuests: any
 }
 export interface TabexConfig {
   kcwikiVersionRange: string
