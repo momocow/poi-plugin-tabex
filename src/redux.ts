@@ -10,7 +10,7 @@ import {
   TabexStore,
   WikiQuestMap,
   ApiPartialQuest
-} from '../types'
+} from './types'
 import {
   PoiQuestlistResponseAction,
   TabexActionType,

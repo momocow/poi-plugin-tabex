@@ -9,10 +9,11 @@ import { eq as vEq, SemVer, validRange } from 'semver'
 import {
   getLocalVersion, resourceLock, upgrade as upgradeLocalWiki,
   WikiResource
-} from '../kcwiki'
-import { apiQuestMapSelector, wikiVersionSelector } from '../selectors'
-import { PoiStore, WikiQuestMap } from '../types'
-import { observeReduxStore$, processWikiQuestMap$ } from './utils'
+} from './kcwiki'
+import { apiQuestMapSelector, wikiVersionSelector } from './selectors'
+import { PoiStore, WikiQuestMap } from './types'
+import { observeReduxStore$ } from './utils'
+import { processWikiQuestMap$ } from './utils/wiki'
 import { Subscription } from 'rxjs'
 
 export interface PoiQuestlistResponseAction {

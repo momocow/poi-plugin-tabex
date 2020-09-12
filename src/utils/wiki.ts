@@ -1,11 +1,4 @@
 import { Map } from 'immutable'
-import { AnyAction, Dispatch } from 'redux'
-import {
-  observe,
-  observer,
-  Options as ReduxObserversOptions
-} from 'redux-observers'
-import { Selector } from 'reselect'
 import { forkJoin, from, Observable } from 'rxjs'
 import { filter, map, mergeMap, reduce, tap } from 'rxjs/operators'
 import {
@@ -18,28 +11,6 @@ import { wikiQuestMapSelector } from '../selectors'
  * 2=出撃, 8=出撃(2), 9=出撃(3)
  */
 export const SORTIE_CATEGORIES: readonly number[] = [2, 8, 9]
-
-export interface ChangeHandle<T> {
-  dispatch: Dispatch<AnyAction>
-  current: T
-  previous?: T
-}
-
-export function observeReduxStore$<S extends Selector<any, any>> (
-  store: any, selector: S, options?: ReduxObserversOptions
-): Observable<ChangeHandle<ReturnType<S>>> {
-  return new Observable(
-    (subscriber) => observe(store, [
-      observer(
-        state => selector(state),
-        (dispatch, current, previous) => {
-          subscriber.next({ dispatch, current, previous })
-        },
-        options
-      )
-    ])
-  )
-}
 
 export interface LockHandle {
   release: () => void

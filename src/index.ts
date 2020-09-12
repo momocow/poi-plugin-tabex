@@ -1,12 +1,12 @@
-import { reducerFactory, store } from './views/redux'
+import { reducerFactory, store } from './redux'
 import { Map } from 'immutable'
 import { SemVer } from 'semver'
-import { wikiQuestConnect } from './views/actions'
+import { wikiQuestConnect } from './actions'
 import { Subscription } from 'rxjs'
 
 export const windowMode = false
 
-export { PoiTabex as reactClass } from './views'
+export { PoiTabex as reactClass } from './components'
 
 let subsc: Subscription
 

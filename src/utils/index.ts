@@ -1,6 +1,15 @@
 import { fork } from 'child-process-promise'
 import { readJson } from 'fs-extra'
 import path from 'path'
+import { Dispatch } from 'react'
+import { AnyAction } from 'redux'
+import {
+  observe,
+  observer,
+  Options as ReduxObserversOptions
+} from 'redux-observers'
+import { Selector } from 'reselect'
+import { Observable } from 'rxjs'
 import { parse as parseVersion, SemVer } from 'semver'
 import { PackageJson } from 'type-fest'
 import { getNpmConfig } from 'views/services/plugin-manager/utils'
@@ -94,4 +103,26 @@ export function getConfig<T = any> (key: string, defaultValue: T): T {
 
 export function setConfig (key: string, value: any): void {
   config.set(getConfigName(key), value)
+}
+
+export interface ChangeHandle<T> {
+  dispatch: Dispatch<AnyAction>
+  current: T
+  previous?: T
+}
+
+export function observeReduxStore$<S extends Selector<any, any>> (
+  store: any, selector: S, options?: ReduxObserversOptions
+): Observable<ChangeHandle<ReturnType<S>>> {
+  return new Observable(
+    (subscriber) => observe(store, [
+      observer(
+        state => selector(state),
+        (dispatch, current, previous) => {
+          subscriber.next({ dispatch, current, previous })
+        },
+        options
+      )
+    ])
+  )
 }
