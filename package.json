@@ -1,6 +1,6 @@
 {
   "name": "poi-plugin-tabex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A poi plugin that helps you schedule your sortie quests to achieve the minimum sorties. 🗺️📌",
   "main": "src/index.ts",
   "scripts": {
