@@ -15,7 +15,8 @@ module.exports = {
     '@storybook/addon-actions',
     '@storybook/addon-links',
     '@storybook/addon-essentials',
-    'storybook-addon-i18next'
+    'storybook-addon-i18next',
+    './addons/story-addon-poooi/preset'
   ],
   webpackFinal: async (config) => {
     return _mergeWith(config, webpackConfig, appendArrayItem)

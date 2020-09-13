@@ -1,6 +1,5 @@
 import React from 'react'
 import i18n from 'i18next'
-
 import  { initReactI18next } from 'react-i18next'
 
 import '@storybook/addon-console'
@@ -25,9 +24,10 @@ export const decorators = [
       'zh-TW': '繁體中文'
     }
   }),
-  (Story, context) => React.createElement(
-    withTranslation()((props) => Story({
+  (Story, context) => {
+    const TStory = withTranslation()((props) => Story({
       ...context, args: { ...context.args, ...props }
     }))
-  )
+    return <TStory />
+  }
 ]
