@@ -9,11 +9,13 @@ function appendArrayItem (objValue, srcValue) {
 
 module.exports = {
   stories: [
-    "./stories/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+    './stories/**/*.stories.@(js|jsx|ts|tsx|mdx)',
   ],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials"
+    '@storybook/addon-actions',
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    'storybook-addon-i18next'
   ],
   webpackFinal: async (config) => {
     return _mergeWith(config, webpackConfig, appendArrayItem)

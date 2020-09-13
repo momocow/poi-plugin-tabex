@@ -1,19 +1,21 @@
 import React from 'react'
-import { withTranslation } from 'react-i18next'
+import { name as PLUGIN_NAME } from '../../package.json'
 import { TabexProps } from '../types'
 
-import { name as PLUGIN_NAME } from '../../package.json'
-
-export const Tabex = withTranslation(PLUGIN_NAME)(
-  class extends React.Component<TabexProps> {
-    public render (): JSX.Element {
-      const { t, apiQuestMap } = this.props
-      console.log(apiQuestMap.toJS())
-      return (
-        <div id={PLUGIN_NAME}>
-          {t('Table Top Exercise')}
-        </div>
-      )
-    }
+export class Tabex extends React.Component<TabexProps> {
+  constructor (props: TabexProps) {
+    super(props)
+    console.log(props)
   }
-)
+
+  public render (): JSX.Element {
+    // const { t: t2 } = useTranslation()
+    const { t, apiQuestMap } = this.props
+    // console.log(this.props, apiQuestMap.toJS(), Date())
+    return (
+      <div id={PLUGIN_NAME}>
+        {t('Table Top Exercise')}
+      </div>
+    )
+  }
+}
