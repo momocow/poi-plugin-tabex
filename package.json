@@ -37,7 +37,7 @@
     "description": "Multiple quests One sortie",
     "icon": "fa/tasks",
     "apiVer": {
-      "10.6.0": "0.1.0"
+      "10.6.0": "0.2.0"
     }
   },
   "devDependencies": {
@@ -70,7 +70,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-standard": "^4.0.1",
-    "gitmoji-cli": "^3.2.10",
+    "gitmoji-cli": "^3.2.11",
     "i18next": "^19.7.0",
     "immutable": "^4.0.0-rc.12",
     "jest": "^26.4.2",
@@ -101,7 +101,7 @@
     "async-lock": "^1.2.4",
     "child-process-promise": "^2.2.1",
     "http-method-enum": "^1.0.0",
-    "kcwiki-quest-data": "^0.7.0",
+    "kcwiki-quest-data": "^0.7.1",
     "package-json": "^6.5.0",
     "rxjs": "^6.6.2",
     "semaphore": "^1.1.0"
