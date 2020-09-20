@@ -3,5 +3,20 @@
     "api_no": 201,
     "api_state": 1,
     "api_category": 2
+  },
+  "249": {
+    "api_no": 249,
+    "api_state": 1,
+    "api_category": 2
+  },
+  "893": {
+    "api_no": 893,
+    "api_state": 1,
+    "api_category": 2
+  },
+  "903": {
+    "api_no": 903,
+    "api_state": 1,
+    "api_category": 2
   }
 }
