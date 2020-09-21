@@ -28,10 +28,6 @@ export interface TabexStore {
   wikiVersion: SemVer
 }
 
-export interface TabexProps extends TabexStore, WithTranslation {
-  mapInfo: IConstState['$maps']
-  activeQuests: any
-}
 export interface TabexConfig {
   kcwikiVersionRange: string
 }

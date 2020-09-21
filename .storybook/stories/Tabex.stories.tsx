@@ -1,5 +1,5 @@
-import { Tabex } from '@/components/tabex'
-import { ApiPartialQuest, TabexProps, WikiQuest } from '@/types'
+import { Tabex, TabexProps } from '@/components/tabex'
+import { ApiPartialQuest, WikiQuest } from '@/types'
 import { Meta, Story } from '@storybook/react/types-6-0'
 import { Map } from 'immutable'
 import { APIMstMapinfo } from 'kcsapi/api_start2/getData/response'
@@ -21,5 +21,6 @@ export const Demo1 = Template.bind({})
 Demo1.args = {
   apiQuestMap: Map<number, ApiPartialQuest>(API_QUESTS),
   wikiQuestMap: Map<number, WikiQuest>(WIKI_QUESTS),
-  mapInfo: MAPS
+  mapInfo: MAPS,
+  mapareaInfo: {}
 }

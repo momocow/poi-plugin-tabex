@@ -24,6 +24,11 @@ export const mapInfoSelector = createSelector(
   state => state.$maps
 )
 
+export const mapareaInfoSelector = createSelector(
+  constSelector,
+  state => state.$mapareas
+)
+
 export const apiQuestMapSelector = createSelector(
   tabexSeletor,
   state => state.apiQuestMap

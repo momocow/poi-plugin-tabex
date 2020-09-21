@@ -5,7 +5,8 @@ import { name as PLUGIN_NAME } from '../../package.json'
 import {
   activeQuestsSelector,
   mapInfoSelector,
-  tabexSeletor
+  tabexSeletor,
+  mapareaInfoSelector
 } from '../selectors'
 import { PoiStore } from '../types'
 import { Tabex } from './tabex'
@@ -16,6 +17,7 @@ export const PoiTabex = _flow(
     (state: PoiStore) => ({
       ...tabexSeletor(state),
       mapInfo: mapInfoSelector(state),
+      mapareaInfo: mapareaInfoSelector(state),
       activeQuests: activeQuestsSelector(state)
     })
   )
