@@ -1,7 +1,4 @@
-const React = require('react')
-const { useAddonState } = require('@storybook/client-api')
-
-const POI_THEMES = require('./themes')
+const { withPoiTheme, POI_THEMES } = require('./themes')
 
 module.exports.parameters = {
   backgrounds: {
@@ -14,12 +11,5 @@ module.exports.parameters = {
 }
 
 module.exports.decorators = [
-  (Story, context) => {
-    const [ state ] = useAddonState(
-      'backgrounds',
-      { name: 'Poi dark' }
-    )
-    const PoiContainer = POI_THEMES[state.name].container
-    return <PoiContainer>{Story(context)}</PoiContainer>
-  }
+  withPoiTheme()
 ]

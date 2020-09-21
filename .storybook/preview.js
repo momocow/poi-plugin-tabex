@@ -14,7 +14,13 @@ i18n
   })
 
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" }
+  actions: { argTypesRegex: "^on[A-Z].*" },
+  poooi: {
+    dimensions: {
+      left: 'calc((100vw - 700px) / 2)',
+      right: 'calc((100vw - 700px) / 2)'
+    }
+  }
 }
 
 export const decorators = [
