@@ -9,7 +9,7 @@ import {
   mapareaInfoSelector
 } from '../selectors'
 import { PoiStore } from '../types'
-import { Tabex } from './tabex'
+import { Tabex } from './Tabex'
 
 export const PoiTabex = _flow(
   withTranslation(PLUGIN_NAME),
