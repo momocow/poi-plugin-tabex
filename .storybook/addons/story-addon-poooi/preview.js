@@ -1,9 +1,17 @@
 const { withPoiTheme, POI_THEMES } = require('./themes')
 
+let MINIMAL_VIEWPORTS
+try {
+  MINIMAL_VIEWPORTS = require('@storybook/addon-viewport').MINIMAL_VIEWPORTS
+} catch (e) {
+  MINIMAL_VIEWPORTS = {}
+}
+
 module.exports.parameters = {
   viewport: {
     defaultViewport: 'poiFullHDCanvas100%',
     viewports: {
+      ...MINIMAL_VIEWPORTS,
       'poiFullHDCanvas100%': {
         name: 'Poi Full HD, Canvas 100% ',
         styles: {
