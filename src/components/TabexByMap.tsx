@@ -2,7 +2,7 @@ import { APIMstMaparea } from 'kcsapi/api_start2/getData/response'
 import React from 'react'
 import styled from 'styled-components'
 import { IConstState, Dictionary } from 'views/utils/selectors'
-import { MapSelect } from './MapSelect'
+import { MapPicker } from './MapPicker'
 
 const MapSelectBar = styled.div`
   padding: 0 10px;
@@ -19,7 +19,7 @@ export const TabexByMap: React.FC<TabexByMapProps> =
     return (
       <div>
         <MapSelectBar>
-          <MapSelect
+          <MapPicker
             maps={Object.values(mapInfo ?? {})}
             areas={Object.values(mapareaInfo ?? {})}
             onMapSelect={(map) => console.log(map)}

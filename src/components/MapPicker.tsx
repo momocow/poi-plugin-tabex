@@ -67,7 +67,7 @@ export interface MapSelectProps {
   onMapSelect: (map: APIMstMapinfo) => void
 }
 
-export const MapSelect: React.FC<MapSelectProps> =
+export const MapPicker: React.FC<MapSelectProps> =
   ({ areas, maps, onMapSelect }) => {
     const [activeArea, setActiveArea] = React.useState(areas[0])
     const activeMaps = getMapsByArea(maps, activeArea)
