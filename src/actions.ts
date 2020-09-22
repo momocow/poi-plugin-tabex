@@ -4,17 +4,19 @@ import {
   APIGetMemberQuestlistResponse
 } from 'kcsapi/api_get_member/questlist/response'
 import { ThunkAction } from 'redux-thunk'
+import { Subscription } from 'rxjs'
 import { skipWhile, switchMap } from 'rxjs/operators'
 import { eq as vEq, SemVer, validRange } from 'semver'
-import {
-  getLocalVersion, resourceLock, upgrade as upgradeLocalWiki,
-  WikiResource
-} from './kcwiki'
 import { apiQuestMapSelector, wikiVersionSelector } from './selectors'
 import { PoiStore, WikiQuestMap } from './types'
 import { observeReduxStore$ } from './utils'
-import { processWikiQuestMap$ } from './utils/wiki'
-import { Subscription } from 'rxjs'
+import {
+  getLocalVersion,
+  processWikiQuestMap$,
+  resourceLock,
+  upgrade as upgradeLocalWiki,
+  WikiResource
+} from './utils/kcwiki'
 
 export interface PoiQuestlistResponseAction {
   type: '@@Response/kcsapi/api_get_member/questlist'
