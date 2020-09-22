@@ -9,10 +9,10 @@ require('./poi-global.css')
 
 const PoiPluginContainer = styled.div`
   position: absolute;
-  top: ${props => props?.dimensions?.top ?? '1rem'};
-  bottom: ${props => props?.dimensions?.bottom ?? '1rem'};
-  left: ${props => props?.dimensions?.left ?? '1rem'};
-  right: ${props => props?.dimensions?.right ?? '1rem'};
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 `
 
 const PoiPluginCard = styled(Card)`
@@ -26,8 +26,8 @@ const PoiPluginCard = styled(Card)`
 const POI_THEMES = {
   'Poi dark': {
     background: '#30404d',
-    container: ({ children, dimensions }) => (
-      <PoiPluginContainer className='bp3-dark' dimensions={dimensions}>
+    container: ({ children }) => (
+      <PoiPluginContainer className='bp3-dark'>
         <PoiPluginCard>
           {children}
         </PoiPluginCard>
@@ -39,19 +39,13 @@ const POI_THEMES = {
 const withPoiTheme = makeDecorator({
   name: 'withPoiTheme',
   parameterName: 'poooi',
-  wrapper: (Story, context, { parameters }) => {
-    const dimensions = parameters?.dimensions
-    
+  wrapper: (Story, context) => {
     const [ state ] = useAddonState(
       'backgrounds',
       { name: 'Poi dark' }
     )
     const PoiContainer = POI_THEMES[state.name].container
-    return (
-      <PoiContainer dimensions={dimensions}>
-        {Story(context)}
-      </PoiContainer>
-    )
+    return <PoiContainer>{Story(context)}</PoiContainer>
   }
 })
 
