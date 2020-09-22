@@ -14,7 +14,8 @@ const SelectGroup = styled(ButtonGroup)`
   }
 
   .map-select-popover {
-    width: 270px;
+    width: calc(50vw - 60px);
+    min-width: 206px;
   }
 `
 
