@@ -1,45 +1,25 @@
 import React from 'react'
-import { Button, ButtonGroup, MenuItem } from '@blueprintjs/core'
-import { Select, ItemRenderer, ISelectProps } from '@blueprintjs/select'
+import {
+  Button, ButtonGroup, MenuItem, Divider, Tag, Intent
+} from '@blueprintjs/core'
+import { Select, ItemRenderer } from '@blueprintjs/select'
 import {
   APIMstMaparea, APIMstMapinfo
 } from 'kcsapi/api_start2/getData/response'
-import styled, { StyledComponent } from 'styled-components'
+import styled from 'styled-components'
 
-interface StyledSelectProps {
-  width: string
-}
-
-const MASelect = styled(Select.ofType<APIMstMaparea>())<StyledSelectProps>`
-  display:block;
-  width: ${props => props.width};
-
-  .bp3-popover-target {
-    display:block;
-    width: ${props => props.width};
+const SelectGroup = styled(ButtonGroup)`
+  .map-select-2, .map-select-popover-target {
+    display: block;
   }
 
-  .bp3-select-popover {
-    width: ${props => props.width};
+  .map-select-popover {
+    width: 270px;
   }
 `
 
-// this should take a function to share with MASelect
-// but it was just a hard time to declare the return type
-// so copy the styled function here
-const MPSelect = styled(Select.ofType<APIMstMapinfo>())<StyledSelectProps>`
-display:block;
-width: ${props => props.width};
-
-.bp3-popover-target {
-  display:block;
-  width: ${props => props.width};
-}
-
-.bp3-select-popover {
-  width: ${props => props.width};
-}
-`
+const MASelect = Select.ofType<APIMstMaparea>()
+const MPSelect = Select.ofType<APIMstMapinfo>()
 
 const mapareaItemRenderer: ItemRenderer<APIMstMaparea> =
   (area, { modifiers, handleClick }) => {
@@ -51,7 +31,8 @@ const mapareaItemRenderer: ItemRenderer<APIMstMaparea> =
         key={area.api_id}
         active={modifiers.active}
         disabled={modifiers.disabled}
-        text={`${area.api_id}-X ${area.api_name}`}
+        text={area.api_name}
+        label={`${area.api_id}-X`}
         onClick={handleClick}
       />
     )
@@ -67,7 +48,8 @@ const mapItemRenderer: ItemRenderer<APIMstMapinfo> =
         key={map.api_id}
         active={modifiers.active}
         disabled={modifiers.disabled}
-        text={`${map.api_maparea_id}-${map.api_no} ${map.api_name}`}
+        text={map.api_name}
+        label={`${map.api_maparea_id}-${map.api_no}`}
         onClick={handleClick}
       />
     )
@@ -99,10 +81,18 @@ export const MapSelect: React.FC<MapSelectProps> =
     }
 
     return (
-      <ButtonGroup>
+      <SelectGroup fill>
+        <Tag icon='globe' large intent={Intent.PRIMARY}>
+          {`${activeMap.api_maparea_id}-${activeMap.api_no}`}
+        </Tag>
+        <Divider />
         <MASelect
-          width='180px'
-          popoverProps={{ usePortal: false }}
+          className='map-select-2'
+          popoverProps={{
+            usePortal: false,
+            popoverClassName: 'map-select-popover',
+            targetClassName: 'map-select-popover-target'
+          }}
           filterable={false}
           items={areas}
           activeItem={activeArea}
@@ -111,13 +101,17 @@ export const MapSelect: React.FC<MapSelectProps> =
         >
           <Button
             fill
-            text={`${activeArea.api_id}-X ${activeArea.api_name}`}
+            text={activeArea.api_name}
             rightIcon='double-caret-vertical'
           />
         </MASelect>
         <MPSelect
-          width='240px'
-          popoverProps={{ usePortal: false }}
+          className='map-select-2'
+          popoverProps={{
+            usePortal: false,
+            popoverClassName: 'map-select-popover',
+            targetClassName: 'map-select-popover-target'
+          }}
           filterable={false}
           items={activeMaps}
           activeItem={activeMap}
@@ -129,13 +123,10 @@ export const MapSelect: React.FC<MapSelectProps> =
         >
           <Button
             fill
-            text={
-              `${activeMap.api_maparea_id}-${activeMap.api_no} ` +
-              `${activeMap.api_name}`
-            }
+            text={activeMap.api_name}
             rightIcon='double-caret-vertical'
           />
         </MPSelect>
-      </ButtonGroup>
+      </SelectGroup>
     )
   }

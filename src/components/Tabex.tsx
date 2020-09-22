@@ -4,7 +4,7 @@ import { TabexStore } from '../types'
 import { WithTranslation } from 'react-i18next'
 import { IConstState, Dictionary } from 'views/utils/selectors'
 
-import { LookUpByMap } from './LookUpByMap'
+import { TabexByMap } from './TabexByMap'
 import { APIMstMaparea } from 'kcsapi/api_start2/getData/response'
 import styled from 'styled-components'
 
@@ -14,10 +14,21 @@ export interface TabexProps extends TabexStore, WithTranslation {
   activeQuests: any
 }
 
-const TabexContainer = styled.div`
-  .nav-tab-2 {
-    width: calc(50% - 20px);
-    text-align: center;
+const TabexMain = styled.div`
+  height: 100%;
+
+  .tabex-tabs {
+    height: 100%;
+
+    .tabex-tab-2 {
+      width: calc(50% - 20px);
+      text-align: center;
+    }
+  
+    .tabex-tab-content {
+      width: 100%;
+      height: calc(100% - 60px); 
+    }
   }
 `
 
@@ -32,28 +43,35 @@ export class Tabex extends React.Component<TabexProps> {
     const { t, apiQuestMap } = this.props
     // console.log(this.props, apiQuestMap.toJS(), Date())
     return (
-      <TabexContainer className='main'>
-        <Tabs large>
+      <TabexMain className='tabex-main'>
+        <Tabs
+          id='tabex-tabs'
+          defaultSelectedTabId='tabex-tab-by-map'
+          className='tabex-tabs'
+          large
+        >
           <Tab
-            id='map-tab'
-            className='nav-tab-2'
+            id='tabex-tab-by-map'
+            className='tabex-tab tabex-tab-2'
+            panelClassName='tabex-tab-content'
             panel={
-              <LookUpByMap
+              <TabexByMap
                 mapInfo={this.props.mapInfo}
                 mapareaInfo={this.props.mapareaInfo}
               />
             }
           >
-            <Icon icon='geosearch' /> {t('Loop up by map')}
+            <Icon icon='geosearch' /> {t('Tabex by map')}
           </Tab>
           <Tab
-            id='quest-tab'
-            className='nav-tab-2'
+            id='tabex-tab-by-quest'
+            className='tabex-tab tabex-tab-2'
+            panelClassName='tabex-tab-content'
           >
-            <Icon icon='search-template' /> {t('Loop up by quest')}
+            <Icon icon='search-template' /> {t('Tabex by quest')}
           </Tab>
         </Tabs>
-      </TabexContainer>
+      </TabexMain>
     )
   }
 }
