@@ -20,8 +20,9 @@ declare module 'views/utils/selectors' {
     APIMstShip,
     APIMstShipgraph,
     APIMstStype,
+    APIMstMaparea,
+    APIMstMapinfo
   } from 'kcsapi/api_start2/getData/response'
-  import { APIMstMapinfo } from 'kcsapi/api_start2/getData/response'
   import { Selector } from 'reselect'
   interface Dictionary<T> {
     [index: string]: T
@@ -37,6 +38,7 @@ declare module 'views/utils/selectors' {
     $shipTypes?: Dictionary<APIMstStype>
     $ships?: Dictionary<APIMstShip>
     $maps?: Dictionary<APIMstMapinfo>
+    $mapareas?: Dictionary<APIMstMaparea>
   }
 
   export interface IFCD {

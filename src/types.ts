@@ -74,11 +74,21 @@ export function isGeneralSR (r: Requirements): r is GeneralSortieRequirement {
 export type Result = Exclude<SortieRequirement['result'], undefined>
 
 /**
+ * Pseudo ranks are started with $,
+ * non-pseudo rank names should be valid `Result`s.
+ */
+export enum BattleRank {
+  クリア, E, D, C, B, A, S,
+  $Clear = クリア,
+  $Wildcard = E
+}
+
+/**
  * Sortie plans from sortie requirements and simple battle requirements.
- * Each property is defined as a condition.
- * If any property is undefined, it's a wildcard condition.
+ *
+ * `undefined` values mean wildcard.
  */
 export interface SortiePlan {
-  map: string
+  maps?: string[]
   result: Result
 }

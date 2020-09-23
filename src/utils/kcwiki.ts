@@ -1,6 +1,6 @@
 import { readJson } from 'fs-extra'
 import { Map } from 'immutable'
-import { isEqual } from 'lodash'
+import { intersection } from 'lodash'
 import fetchRemotePackageJson, { AbbreviatedMetadata } from 'package-json'
 import { forkJoin, from, Observable } from 'rxjs'
 import { filter, map, mergeMap, reduce, tap } from 'rxjs/operators'
@@ -16,7 +16,10 @@ import { KcwikiError } from '../errors'
 import { wikiQuestMapSelector } from '../selectors'
 import {
   ApiQuestMap,
+  BattleRank,
+  // BattleResult,
   isGeneralSR,
+  // isIncomparableResult,
   NormalRequirement,
   Result,
   SortiePlan,
@@ -147,52 +150,52 @@ export function getNormalRequirements (quest: WikiQuest): NormalRequirement[] {
   }
 }
 
-export function getBetterEqualResults (result?: Result): Result[] {
-  const betterResults: Result[] = []
-  switch (result) {
-    case 'クリア':
-      betterResults.push('クリア')
-      break
-    default:
-    case 'C':
-      betterResults.push('C')
-      // eslint fallthrough
-    case 'B':
-      betterResults.push('B')
-      // eslint fallthrough
-    case 'A':
-      betterResults.push('A')
-      // eslint fallthrough
-    case 'S':
-      betterResults.push('S')
+export function getRankName (rank: BattleRank): Result {
+  const rankEntry = Object.entries(BattleRank)
+    .find(([name, value]) => value === rank && !name.startsWith('$'))
+  if (typeof rankEntry === 'undefined') {
+    throw new TypeError('rank is not one of BattleRanks')
   }
-  return betterResults
+  return rankEntry[0] as Result
 }
 
 /**
  * Get all possible sortie plans that fulfills the quest
  */
-export function getSortiePlans (
-  quest: WikiQuest, allMaps: string[] = []
-): SortiePlan[] {
+export function getSortiePlans (quest: WikiQuest): SortiePlan[] {
   return getNormalRequirements(quest)
     .filter(isGeneralSR)
-    .flatMap((r): SortiePlan[] => {
-      const maps = r.category === 'simple' ? allMaps
+    .map((r): SortiePlan => {
+      const maps = r.category === 'simple' ? undefined
         : Array.isArray(r.map) ? r.map
           : typeof r.map !== 'undefined' ? [r.map]
-            : allMaps
-      const results = getBetterEqualResults(
-        r.category === 'sortie' ? r.result : undefined
-      )
-      return maps.flatMap(map => results.map(result => ({ map, result })))
+            : undefined
+      const result = r.category === 'sortie'
+        ? r.result ?? getRankName(BattleRank.$Wildcard)
+        : getRankName(BattleRank.$Wildcard)
+      return { maps, result }
     })
+}
+
+export function getCommonSortiePlan (
+  plan1: SortiePlan, plan2: SortiePlan
+): SortiePlan | null {
+  const maps = typeof plan1.maps === 'undefined' ? plan2.maps
+    : typeof plan2.maps === 'undefined' ? plan1.maps
+      : intersection(plan1.maps, plan2.maps)
+  const result = getRankName(
+    Math.max(BattleRank[plan1.result], BattleRank[plan2.result])
+  )
+  // if no common maps, no common sortie plan
+  return maps?.length === 0 ? null : { maps, result }
 }
 
 export function getCommonSortiePlans (
   planlist1: SortiePlan[], planlist2: SortiePlan[]
 ): SortiePlan[] {
-  return planlist1.filter(
-    plan1 => planlist2.findIndex(plan2 => isEqual(plan1, plan2)) >= 0
-  )
+  return planlist1
+    .flatMap(
+      plan1 => planlist2.map(plan2 => getCommonSortiePlan(plan1, plan2))
+    )
+    .filter((plan): plan is SortiePlan => plan !== null)
 }
