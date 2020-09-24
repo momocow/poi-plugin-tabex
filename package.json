@@ -99,13 +99,10 @@
     "redux": "^4.0.5"
   },
   "dependencies": {
-    "async": "^3.2.0",
-    "async-lock": "^1.2.4",
     "child-process-promise": "^2.2.1",
     "http-method-enum": "^1.0.0",
     "kcwiki-quest-data": "^0.7.2",
     "package-json": "^6.5.0",
-    "rxjs": "^6.6.3",
-    "semaphore": "^1.1.0"
+    "rxjs": "^6.6.3"
   }
 }
